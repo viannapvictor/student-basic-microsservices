@@ -1,0 +1,27 @@
+services:
+  consul:
+    image: hashicorp/consul:latest
+    container_name: consul-server
+    command:
+      - agent
+      - -dev
+      - -ui
+      - -client=0.0.0.0
+      - -bind=0.0.0.0
+      - -bootstrap-expect=1
+    ports:
+      - "8500:8500"    # Consul UI e API
+      - "8600:8600"    # Consul DNS
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/v1/status/leader"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+networks:
+  microservices-network:
+    driver: bridge
