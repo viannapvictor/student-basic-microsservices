@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        service-name: ${spring.application.name}
+        instance-id: ${spring.application.name}:${random.value}
+        health-check-interval: 10s
+        health-check-path: /actuator/health
+        prefer-ip-address: true
+
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      
+      routes:
+        # Rota para Student Service
+        - id: student-service
+          uri: lb://student-service
+          predicates:
+            - Path=/api/students/**
+          filters:
+            - StripPrefix=1
+
+        # Rota para Enrollment Service
+        - id: enrollment-service
+          uri: lb://enrollment-service
+          predicates:
+            - Path=/api/enrollments/**
+          filters:
+            - StripPrefix=1
+
+# Porta do Gateway
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

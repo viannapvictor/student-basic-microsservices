@@ -3,6 +3,7 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 student-module/.mvn/wrapper/maven-wrapper.properties
 enrollment-module/.mvn/wrapper/maven-wrapper.properties
+gateway-module/.mvn/wrapper/maven-wrapper.properties
 !**/src/main/**/target/
 !**/src/test/**/target/
 

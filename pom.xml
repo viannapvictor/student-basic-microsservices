@@ -12,7 +12,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.company</groupId>
+    <groupId>com.infnet</groupId>
     <artifactId>student-service</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
@@ -22,6 +22,7 @@
     <modules>
         <module>student-module</module>
         <module>enrollment-module</module>
+        <module>gateway-module</module>
     </modules>
 
     <properties>
