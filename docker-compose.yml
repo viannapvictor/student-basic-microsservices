@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  consul:
+    image: hashicorp/consul:latest
+    container_name: consul-server
+    command:
+      - agent
+      - -dev
+      - -ui
+      - -client=0.0.0.0
+      - -bind=0.0.0.0
+    ports:
+      - "8500:8500"
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/v1/status/leader"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  student-service:
+    build:
+      context: .
+      dockerfile: student-module/Dockerfile
+    image: student-service:latest
+    container_name: student-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    depends_on:
+      - consul
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  enrollment-service:
+    build:
+      context: .
+      dockerfile: enrollment-module/Dockerfile
+    image: enrollment-service:latest
+    container_name: enrollment-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    depends_on:
+      - consul
+      - student-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway-module/Dockerfile
+    image: api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    depends_on:
+      - consul
+      - student-service
+      - enrollment-service
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+networks:
+  microservices-network:
+    driver: bridge
